@@ -18,10 +18,10 @@ export const projectType = defineType({
       of: [{ type: 'string' }],
     }),
     defineField({
-      name: 'imagePath',
-      title: 'Image Path',
-      type: 'string',
-      description: 'Path relative to /public, e.g. /portfolio-surfers.jpg',
+      name: 'image',
+      title: 'Image',
+      type: 'image',
+      options: { hotspot: true },
       validation: (rule) => rule.required(),
     }),
     defineField({

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { getProjects } from "@/lib/sanity";
+import { getProjects, urlFor, type SanityProject } from "@/lib/sanity";
 
 const mono = { fontFamily: "var(--font-geist-mono), monospace", fontSize: 14, fontWeight: 400, lineHeight: 1.1, color: "#1f1f1f", textTransform: "uppercase" as const, margin: 0 };
 
@@ -30,11 +30,12 @@ function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
   return <div style={{ width: 14, height: 14, flexShrink: 0, ...b[pos] }} />;
 }
 
-function ProjectCard({ title, tags, img, height }: { title: string; tags: string[]; img: string; height: number }) {
+function ProjectCard({ title, tags, image, height }: { title: string; tags: string[]; image: SanityProject['image']; height: number }) {
+  const imgUrl = urlFor(image).width(800).url()
   return (
     <div className="flex flex-col gap-[10px] w-full">
       <div className="relative w-full overflow-hidden" style={{ height }}>
-        <Image src={img} alt={title} fill className="object-cover" />
+        <Image src={imgUrl} alt={title} fill className="object-cover" />
         <div className="absolute bottom-4 left-4 flex gap-3">
           {tags.map(t => <Tag key={t} label={t} />)}
         </div>
@@ -86,7 +87,7 @@ export async function Portfolio() {
         {/* Mobile: single column */}
         <div className="flex md:hidden flex-col gap-6 w-full">
           {projects.map(p => (
-            <ProjectCard key={p._id} title={p.title} tags={p.tags} img={p.imagePath} height={390} />
+            <ProjectCard key={p._id} title={p.title} tags={p.tags} image={p.image} height={390} />
           ))}
           <div className="flex gap-3 items-stretch w-full">
             <div className="flex flex-col justify-between w-4 shrink-0"><Corner pos="tl" /><Corner pos="bl" /></div>
@@ -106,7 +107,7 @@ export async function Portfolio() {
         <div className="hidden md:flex gap-6 items-end w-full">
           <div className="flex flex-col flex-1 min-w-0" style={{ gap: "calc(80px + 10vh)" }}>
             {leftProjects.map((p, i) => (
-              <ProjectCard key={p._id} title={p.title} tags={p.tags} img={p.imagePath} height={desktopHeights[i]?.left ?? 699} />
+              <ProjectCard key={p._id} title={p.title} tags={p.tags} image={p.image} height={desktopHeights[i]?.left ?? 699} />
             ))}
             <div className="flex gap-3 items-stretch" style={{ width: 465 }}>
               <div className="flex flex-col justify-between w-4 shrink-0"><Corner pos="tl" /><Corner pos="bl" /></div>
@@ -123,7 +124,7 @@ export async function Portfolio() {
           </div>
           <div className="flex flex-col flex-1 min-w-0 pt-[240px]" style={{ gap: "calc(160px + 10vh)" }}>
             {rightProjects.map((p, i) => (
-              <ProjectCard key={p._id} title={p.title} tags={p.tags} img={p.imagePath} height={desktopHeights[i + 2]?.right ?? 699} />
+              <ProjectCard key={p._id} title={p.title} tags={p.tags} image={p.image} height={desktopHeights[i + 2]?.right ?? 699} />
             ))}
           </div>
         </div>
