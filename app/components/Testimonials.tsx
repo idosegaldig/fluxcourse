@@ -1,61 +1,49 @@
 import Image from "next/image";
+import { getTestimonials, urlFor, type SanityTestimonial } from "@/lib/sanity";
 
-// zIndex ladder: cards behind title = 2, title = 5, cards in front = 10
-const cards = [
-  {
-    logo: "/testimonial-logo-1.png", logoW: 143, logoH: 36,
-    quote: "A brilliant creative partner who transformed our vision into a unique, high-impact brand identity. Their ability to craft everything from custom mascots to polished logos is truly impressive.",
-    name: "Marko Stojković",
-    style: { left: "7.08%", top: "calc(14.39% - 2vh)", rotate: "-6.85deg", zIndex: 10 },
-  },
-  {
-    logo: "/testimonial-logo-2.png", logoW: 138, logoH: 26,
-    quote: "Professional, precise, and incredibly fast at handling complex product visualizations and templates.",
-    name: "Lukas Weber",
-    style: { left: "46.94%", top: "27.56%", rotate: "2.9deg", zIndex: 2 },
-  },
-  {
-    logo: "/testimonial-logo-3.png", logoW: 109, logoH: 35,
-    quote: "A strategic partner who balances stunning aesthetics with high-performance UX for complex platforms. They don't just make things look good; they solve business problems through visual clarity.",
-    name: "Sarah Jenkins",
-    style: { left: "21.18%", top: "calc(56.03% + 2vh)", rotate: "2.23deg", zIndex: 10 },
-  },
-  {
-    logo: "/testimonial-logo-4.png", logoW: 81, logoH: 42,
-    quote: "An incredibly versatile designer who delivers consistent quality across a wide range of styles and formats.",
-    name: "Sofia Martínez",
-    style: { left: "68.54%", top: "58%", rotate: "-4.15deg", zIndex: 10 },
-  },
-];
+// Layout constants per slot (order 1–4) — design positions, not content
+const desktopSlots = [
+  { left: "7.08%",  top: "calc(14.39% - 2vh)", rotate: "-6.85deg", zIndex: 10, logoW: 143, logoH: 36 },
+  { left: "46.94%", top: "27.56%",              rotate: "2.9deg",   zIndex: 2,  logoW: 138, logoH: 26 },
+  { left: "21.18%", top: "calc(56.03% + 2vh)",  rotate: "2.23deg",  zIndex: 10, logoW: 109, logoH: 35 },
+  { left: "68.54%", top: "58%",                  rotate: "-4.15deg", zIndex: 10, logoW: 81,  logoH: 42 },
+]
 
-// Mobile shows 2 cards side-by-side (Marko + Sofia) as per Figma mobile design
-const mobileCards = [
-  { logo: "/testimonial-logo-2.png", logoW: 143, logoH: 19, rotate: "-3.5deg",
-    quote: "A brilliant creative partner who transformed our vision into a unique, high-impact brand identity. Their ability to craft everything from custom mascots to polished logos is truly impressive.",
-    name: "Marko Stojković" },
-  { logo: "/testimonial-logo-4.png", logoW: 81, logoH: 36, rotate: "2deg",
-    quote: "An incredibly versatile designer who delivers consistent quality across a wide range of styles and formats.",
-    name: "Sofia Martínez" },
-];
+const mobileSlots = [
+  { logoW: 143, logoH: 19, rotate: "-3.5deg" },
+  { logoW: 81,  logoH: 36, rotate: "2deg" },
+]
 
-export function Testimonials() {
+function TestimonialCard({ t, logoW, logoH }: { t: SanityTestimonial; logoW: number; logoH: number }) {
+  const logoUrl = urlFor(t.logo).width(300).url()
+  return (
+    <div className="bg-[#f1f1f1] border border-[#ddd] rounded p-6 flex flex-col gap-4">
+      <div className="relative" style={{ width: logoW, height: logoH }}>
+        <Image src={logoUrl} alt="" fill className="object-contain object-left" />
+      </div>
+      <p className="m-0 text-[#1f1f1f] text-[18px] leading-[1.3]" style={{ letterSpacing: "-0.72px" }}>{t.quote}</p>
+      <p className="m-0 text-black font-black text-[16px] uppercase" style={{ letterSpacing: "-0.64px", lineHeight: 1.1 }}>{t.name}</p>
+    </div>
+  )
+}
+
+export async function Testimonials() {
+  const testimonials = await getTestimonials()
+
+  const desktopCards = desktopSlots.map((slot, i) => ({ slot, t: testimonials[i] })).filter(({ t }) => t)
+  const mobileCards  = mobileSlots.map((slot, i) => ({ slot, t: testimonials[i] })).filter(({ t }) => t)
+
   return (
     <section className="w-full bg-[#fafafa] overflow-hidden"
       style={{ fontFamily: "var(--font-inter), sans-serif" }}>
 
       {/* ── Mobile ── */}
       <div className="flex md:hidden flex-col gap-8 px-4 py-16">
-        <p className="m-0 font-medium text-black text-center capitalize testimonials-title">{`Testimonials`}</p>
+        <p className="m-0 font-medium text-black text-center capitalize testimonials-title">Testimonials</p>
         <div className="flex gap-[-10px] items-start w-full overflow-hidden">
-          {mobileCards.map((c) => (
-            <div key={c.name} className="shrink-0" style={{ width: "50%", paddingRight: 10, transform: `rotate(${c.rotate})` }}>
-              <div className="bg-[#f1f1f1] border border-[#ddd] rounded p-6 flex flex-col gap-4">
-                <div className="relative" style={{ width: c.logoW, height: c.logoH }}>
-                  <Image src={c.logo} alt="" fill className="object-contain object-left" />
-                </div>
-                <p className="m-0 text-[#1f1f1f] text-[18px] leading-[1.3]" style={{ letterSpacing: "-0.72px" }}>{c.quote}</p>
-                <p className="m-0 text-black font-black text-[16px] uppercase" style={{ letterSpacing: "-0.64px", lineHeight: 1.1 }}>{c.name}</p>
-              </div>
+          {mobileCards.map(({ slot, t }) => (
+            <div key={t._id} className="shrink-0" style={{ width: "50%", paddingRight: 10, transform: `rotate(${slot.rotate})` }}>
+              <TestimonialCard t={t} logoW={slot.logoW} logoH={slot.logoH} />
             </div>
           ))}
         </div>
@@ -64,22 +52,16 @@ export function Testimonials() {
       {/* ── Desktop: scattered absolute layout ── */}
       <div className="hidden md:block relative" style={{ minHeight: 987 }}>
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" style={{ zIndex: 5 }}>
-          <p className="m-0 font-medium text-black text-center capitalize testimonials-title">{`Testimonials`}</p>
+          <p className="m-0 font-medium text-black text-center capitalize testimonials-title">Testimonials</p>
         </div>
-        {cards.map((c) => (
-          <div key={c.name} className="absolute"
-            style={{ left: c.style.left, top: c.style.top, transform: `rotate(${c.style.rotate})`, width: 353, zIndex: c.style.zIndex }}>
-            <div className="bg-[#f1f1f1] border border-[#ddd] rounded p-6 flex flex-col gap-4">
-              <div className="relative" style={{ width: c.logoW, height: c.logoH }}>
-                <Image src={c.logo} alt="" fill className="object-contain object-left" />
-              </div>
-              <p className="m-0 text-[#1f1f1f] text-[18px] leading-[1.3]" style={{ letterSpacing: "-0.72px" }}>{c.quote}</p>
-              <p className="m-0 text-black font-black text-[16px] uppercase" style={{ letterSpacing: "-0.64px", lineHeight: 1.1 }}>{c.name}</p>
-            </div>
+        {desktopCards.map(({ slot, t }) => (
+          <div key={t._id} className="absolute"
+            style={{ left: slot.left, top: slot.top, transform: `rotate(${slot.rotate})`, width: 353, zIndex: slot.zIndex }}>
+            <TestimonialCard t={t} logoW={slot.logoW} logoH={slot.logoH} />
           </div>
         ))}
       </div>
 
     </section>
-  );
+  )
 }

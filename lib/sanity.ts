@@ -24,6 +24,15 @@ export type SanityProject = {
   order: number
 }
 
+export type SanityTestimonial = {
+  _id: string
+  name: string
+  quote: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  logo: any
+  order: number
+}
+
 export async function getProjects(): Promise<SanityProject[]> {
   return client.fetch(
     `*[_type == "project"] | order(order asc) {
@@ -31,6 +40,18 @@ export async function getProjects(): Promise<SanityProject[]> {
       title,
       tags,
       image,
+      order
+    }`
+  )
+}
+
+export async function getTestimonials(): Promise<SanityTestimonial[]> {
+  return client.fetch(
+    `*[_type == "testimonial"] | order(order asc) {
+      _id,
+      name,
+      quote,
+      logo,
       order
     }`
   )

@@ -1,3 +1,4 @@
 import { projectType } from './project'
+import { testimonialType } from './testimonial'
 
-export const schemaTypes = [projectType]
+export const schemaTypes = [projectType, testimonialType]
