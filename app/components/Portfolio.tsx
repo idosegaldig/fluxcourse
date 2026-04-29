@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getProjects } from "@/lib/sanity";
 
 const mono = { fontFamily: "var(--font-geist-mono), monospace", fontSize: 14, fontWeight: 400, lineHeight: 1.1, color: "#1f1f1f", textTransform: "uppercase" as const, margin: 0 };
 
@@ -29,13 +30,6 @@ function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
   return <div style={{ width: 14, height: 14, flexShrink: 0, ...b[pos] }} />;
 }
 
-const projects = [
-  { title: "Surfers paradise",   tags: ["Social Media", "Photography"], img: "/portfolio-surfers.jpg",  hMobile: 390, hDesktopL: 744, hDesktopR: 0   },
-  { title: "Cyberpunk caffe",    tags: ["Social Media", "Photography"], img: "/portfolio-cyberpunk.jpg", hMobile: 390, hDesktopL: 699, hDesktopR: 0   },
-  { title: "Agency 976",         tags: ["Social Media", "Photography"], img: "/portfolio-agency.jpg",   hMobile: 390, hDesktopL: 0,   hDesktopR: 699  },
-  { title: "Minimal Playground", tags: ["Social Media", "Photography"], img: "/portfolio-minimal.jpg",  hMobile: 390, hDesktopL: 0,   hDesktopR: 744  },
-];
-
 function ProjectCard({ title, tags, img, height }: { title: string; tags: string[]; img: string; height: number }) {
   return (
     <div className="flex flex-col gap-[10px] w-full">
@@ -54,7 +48,19 @@ function ProjectCard({ title, tags, img, height }: { title: string; tags: string
   );
 }
 
-export function Portfolio() {
+const desktopHeights: Record<number, { left: number; right: number }> = {
+  0: { left: 744, right: 0 },
+  1: { left: 699, right: 0 },
+  2: { left: 0,   right: 699 },
+  3: { left: 0,   right: 744 },
+};
+
+export async function Portfolio() {
+  const projects = await getProjects();
+
+  const leftProjects  = projects.filter((_, i) => desktopHeights[i]?.left  > 0);
+  const rightProjects = projects.filter((_, i) => desktopHeights[i]?.right > 0);
+
   return (
     <section className="w-full bg-[#fafafa] px-4 py-12 md:px-8 md:py-[80px]"
       style={{ fontFamily: "var(--font-inter), sans-serif" }}>
@@ -72,18 +78,16 @@ export function Portfolio() {
               <p style={mono}>004</p>
             </div>
           </div>
-          {/* Desktop-only vertical [ portfolio ] label */}
           <div className="hidden md:flex items-center justify-center" style={{ width: 15, height: 110 }}>
             <p className="m-0" style={{ ...mono, transform: "rotate(-90deg)", whiteSpace: "nowrap" }}>[ portfolio ]</p>
           </div>
         </div>
 
-        {/* ── Mobile: single column ── */}
+        {/* Mobile: single column */}
         <div className="flex md:hidden flex-col gap-6 w-full">
           {projects.map(p => (
-            <ProjectCard key={p.title} title={p.title} tags={p.tags} img={p.img} height={p.hMobile} />
+            <ProjectCard key={p._id} title={p.title} tags={p.tags} img={p.imagePath} height={390} />
           ))}
-          {/* CTA bracket block */}
           <div className="flex gap-3 items-stretch w-full">
             <div className="flex flex-col justify-between w-4 shrink-0"><Corner pos="tl" /><Corner pos="bl" /></div>
             <div className="flex flex-col gap-[10px] flex-1 py-3">
@@ -98,12 +102,12 @@ export function Portfolio() {
           </div>
         </div>
 
-        {/* ── Desktop: 2-col staggered ── */}
+        {/* Desktop: 2-col staggered */}
         <div className="hidden md:flex gap-6 items-end w-full">
-          {/* Left column */}
           <div className="flex flex-col flex-1 min-w-0" style={{ gap: "calc(80px + 10vh)" }}>
-            <ProjectCard title="Surfers paradise"  tags={["Social Media","Photography"]} img="/portfolio-surfers.jpg"  height={744} />
-            <ProjectCard title="Cyberpunk caffe"   tags={["Social Media","Photography"]} img="/portfolio-cyberpunk.jpg" height={699} />
+            {leftProjects.map((p, i) => (
+              <ProjectCard key={p._id} title={p.title} tags={p.tags} img={p.imagePath} height={desktopHeights[i]?.left ?? 699} />
+            ))}
             <div className="flex gap-3 items-stretch" style={{ width: 465 }}>
               <div className="flex flex-col justify-between w-4 shrink-0"><Corner pos="tl" /><Corner pos="bl" /></div>
               <div className="flex flex-col gap-[10px] flex-1 py-3">
@@ -117,10 +121,10 @@ export function Portfolio() {
               <div className="flex flex-col justify-between w-4 shrink-0"><Corner pos="tr" /><Corner pos="br" /></div>
             </div>
           </div>
-          {/* Right column — offset 240px */}
           <div className="flex flex-col flex-1 min-w-0 pt-[240px]" style={{ gap: "calc(160px + 10vh)" }}>
-            <ProjectCard title="Agency 976"         tags={["Social Media","Photography"]} img="/portfolio-agency.jpg"   height={699} />
-            <ProjectCard title="Minimal Playground" tags={["Social Media","Photography"]} img="/portfolio-minimal.jpg"  height={744} />
+            {rightProjects.map((p, i) => (
+              <ProjectCard key={p._id} title={p.title} tags={p.tags} img={p.imagePath} height={desktopHeights[i + 2]?.right ?? 699} />
+            ))}
           </div>
         </div>
 
