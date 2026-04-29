@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #fafafa;
   --foreground: #171717;
 }
 
@@ -24,3 +24,31 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ── Responsive type helpers ──────────────────────────────────────── */
+/* Hero title: 96px mobile → fill-container formula desktop */
+.hero-title {
+  font-size: 96px; letter-spacing: -0.07em; line-height: 1.1;
+  white-space: pre-wrap; text-align: center;
+}
+@media (min-width: 768px) {
+  .hero-title { font-size: calc(14.39vw - 9.21px); white-space: pre; text-align: left; }
+}
+
+/* Section big display: 32px mobile → 6.67vw desktop */
+.section-big-text { font-size: 32px; letter-spacing: -0.08em; line-height: 0.84; }
+@media (min-width: 768px) { .section-big-text { font-size: 6.67vw; } }
+
+/* Testimonials heading: 64px mobile → fill-container desktop */
+.testimonials-title {
+  font-size: 64px; letter-spacing: -0.07em; line-height: 1.1; text-align: center;
+}
+@media (min-width: 768px) { .testimonials-title { font-size: calc(14.39vw - 9.21px); } }
+
+/* News heading: 32px mobile → 64px desktop */
+.news-heading { font-size: 32px; letter-spacing: -0.08em; line-height: 0.86; }
+@media (min-width: 768px) { .news-heading { font-size: 64px; } }
+
+/* Footer wordmark: 91px mobile → 290px desktop */
+.footer-wordmark { font-size: 91px; letter-spacing: -0.06em; line-height: 0.8; }
+@media (min-width: 768px) { .footer-wordmark { font-size: 290px; } }
