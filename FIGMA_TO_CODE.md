@@ -416,3 +416,177 @@ function ArrowIcon({ size = 32 }: { size?: number }) {
 6. **Do NOT put sibling elements in separate containers** when you need their left/right edges to align. One shared `relative w-full` container is the source of truth.
 7. **Do NOT download Figma CDN URLs at runtime.** Always `curl` them to `/public` immediately — they expire in 7 days.
 8. **Do NOT use `isolation: isolate`** if the section also contains `backdrop-filter` children — isolation can break backdrop-filter compositing. Use DOM order + no-z-index on the content wrapper instead.
+
+---
+
+## 8. Mobile Implementation Lessons (Learned the Hard Way)
+
+These are issues that required **3+ repeated prompts** to fix. Read before touching any mobile layout.
+
+---
+
+### 8.1 ALWAYS fetch the full mobile frame first
+
+**Problem:** Implementing desktop first and then "adapting" mobile led to repeated rework across every section.
+
+**Rule:** When a Figma link is provided, immediately fetch **both** the desktop frame AND the mobile frame (`node-id` for the full-page mobile view) before writing a single line. Map out every section's differences upfront. Example:
+
+```
+Desktop node: 1:2   → get_design_context
+Mobile node:  1:282 → get_design_context  ← do this FIRST, not later
+```
+
+**Never assume mobile = scaled-down desktop.** In this project, mobile had completely different layouts: stacked labels, full-width images, sliders instead of grids, different font sizes.
+
+---
+
+### 8.2 Hero section: mobile image requires separate treatment
+
+**Problem:** The hero background image was fixed `h-[635px]` on mobile instead of 100vh, and repeated attempts to center the subject failed.
+
+**Root causes and fixes:**
+
+| Issue | Wrong approach | Correct approach |
+|---|---|---|
+| Height not 100vh | `h-[635px]` | `h-[100dvh]` (dynamic viewport, accounts for iOS browser chrome) |
+| Image not centered | Extended container `right: -80%` with `object-top` | Separate `md:hidden` / `hidden md:block` image divs; mobile uses `object-cover object-center` or `object-[50%_20%]` |
+| Desktop broken by mobile fix | Single `<div className="absolute inset-0">` for both | Two divs: one `md:hidden`, one `hidden md:block` — never share image containers across breakpoints |
+
+**Rule: Always use two separate image divs for mobile/desktop when the image treatment differs:**
+```tsx
+{/* Mobile only */}
+<div className="md:hidden absolute inset-0">
+  <Image src="/Mobile Hero Image.png" fill className="object-cover object-center" priority />
+</div>
+{/* Desktop only */}
+<div className="hidden md:block absolute inset-0">
+  <Image src="/hero-subject.png" fill className="object-contain object-top" priority />
+</div>
+```
+
+---
+
+### 8.3 H1 centering: `whitespace-pre-line` breaks `text-align: center`
+
+**Problem:** Using `{"Harvey\nSpecter"}` with `whitespace-pre-line` and `text-align: center` looked left-aligned in browser.
+
+**Root cause:** `whitespace-pre-line` interacts unpredictably with `text-align` on large font sizes — the browser renders the text block at its natural width and centers that block, but the natural width at 96px may overflow and anchor left.
+
+**Fix:** Split into two separate `<p>` elements. Each is a full-width block and centers independently:
+```tsx
+<p className="m-0 font-medium text-white mix-blend-overlay hero-title w-full">Harvey</p>
+<p className="m-0 font-medium text-white mix-blend-overlay hero-title w-full">Specter</p>
+```
+
+Apply `text-align: center` in the CSS class (`.hero-title`), not just as a Tailwind class on the element — CSS class wins over utility conflicts.
+
+---
+
+### 8.4 `mix-blend-overlay`: apply to each element, not a wrapper div
+
+**Problem:** Wrapping both `[ Hello i'm ]` and the H1 in a single `<div className="mix-blend-overlay">` worked inconsistently — the blend sometimes applied to the div's own background, not the photo.
+
+**Fix:** Apply `mix-blend-overlay` directly to each `<p>` tag:
+```tsx
+<p className="m-0 text-white uppercase mix-blend-overlay ...">[ Hello i'm ]</p>
+<p className="m-0 font-medium text-white mix-blend-overlay hero-title w-full">Harvey</p>
+<p className="m-0 font-medium text-white mix-blend-overlay hero-title w-full">Specter</p>
+```
+
+---
+
+### 8.5 Never change shared CSS classes for mobile without a desktop `@media` override
+
+**Problem:** Changing `.hero-title` base styles (line-height, text-align) broke the desktop layout.
+
+**Rule:** Mobile styles go in the base class. Desktop overrides go in `@media (min-width: 768px)`:
+```css
+.hero-title {
+  /* mobile base */
+  font-size: 96px; line-height: 0.85; text-align: center;
+}
+@media (min-width: 768px) {
+  .hero-title {
+    /* desktop override */
+    font-size: calc(14.39vw - 9.21px); line-height: 1.1; text-align: left; white-space: pre;
+  }
+}
+```
+
+---
+
+### 8.6 Filenames with spaces need URL encoding
+
+**Problem:** `src="/Mobile Hero Image.png"` shows a grey background — Next.js `<Image>` silently fails on unencoded spaces.
+
+**Fix:** Always URL-encode spaces in filenames passed to `src`:
+```tsx
+<Image src="/Mobile%20Hero%20Image.png" ... />
+```
+
+**Better fix:** Rename files without spaces before saving to `/public`. Use hyphens: `mobile-hero.png`.
+
+---
+
+### 8.7 Equal-height cards in a horizontal scroll slider
+
+**Problem:** `items-stretch` + `h-full` on cards creates a circular height reference — the container height = tallest child, but `h-full` = container height = undefined → browser ignores it.
+
+**Fix:** Use `useEffect` to measure and set heights in JS after render:
+```tsx
+useEffect(() => {
+  const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
+  const max = Math.max(...cards.map(c => c.offsetHeight));
+  cards.forEach(c => { c.style.height = `${max}px`; });
+}, [data]);
+```
+
+---
+
+### 8.8 Scroll-snap slider: `gap` breaks `goTo` math
+
+**Problem:** Adding `gap: 10px` to the slider container makes `goTo(i)` scroll to the wrong position because `scrollLeft` for slide `i` is `i * (slideWidth + gap)`, not `i * slideWidth`.
+
+**Fix:** Define gap as a constant and use it in both layout and scroll calculations:
+```tsx
+const GAP = 10;
+
+// layout
+<div style={{ gap: GAP, scrollSnapType: "x mandatory" }}>
+
+// scroll math
+function onScroll() {
+  const idx = Math.round(scrollLeft / (clientWidth + GAP));
+}
+function goTo(i: number) {
+  scrollTo({ left: i * (clientWidth + GAP) });
+}
+```
+
+---
+
+### 8.9 Mobile-only layout changes: always use `md:hidden` / `hidden md:block`
+
+**Problem:** Changing image containers, flex direction, or positioning without breakpoint guards repeatedly broke the desktop layout.
+
+**Rule:** Every mobile-specific element gets `md:hidden`. Every desktop-specific element gets `hidden md:block` (or `hidden md:flex`). Never modify shared elements without adding a responsive guard.
+
+```tsx
+{/* Mobile version */}
+<div className="flex md:hidden flex-col ..."> ... </div>
+
+{/* Desktop version — untouched */}
+<div className="hidden md:flex ..."> ... </div>
+```
+
+If a shared CSS class needs different values, use `@media` in globals.css — not inline styles that only target one breakpoint.
+
+---
+
+### 8.10 Vercel deployment: env vars must be set for ALL environments
+
+**Problem:** Sanity env vars were set for Production only. `vercel deploy` (without `--prod`) creates a Preview deployment which doesn't have the vars → build fails with `Configuration must contain projectId`.
+
+**Fix:** Either:
+- Always deploy to production: `vercel deploy --prod --yes --scope <team>`
+- Or add vars to Preview too: `vercel env add VAR_NAME preview --value "..." --yes --scope <team>`
