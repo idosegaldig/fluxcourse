@@ -28,11 +28,11 @@ body {
 /* ── Responsive type helpers ──────────────────────────────────────── */
 /* Hero title: 96px mobile → fill-container formula desktop */
 .hero-title {
-  font-size: 96px; letter-spacing: -0.07em; line-height: 1.1;
-  white-space: pre-wrap; text-align: center;
+  font-size: 96px; letter-spacing: -0.07em; line-height: 0.85;
+  text-align: center;
 }
 @media (min-width: 768px) {
-  .hero-title { font-size: calc(14.39vw - 9.21px); white-space: pre; text-align: left; }
+  .hero-title { font-size: calc(14.39vw - 9.21px); white-space: pre; text-align: left; line-height: 1.1; }
 }
 
 /* Section big display: 32px mobile → 6.67vw desktop */

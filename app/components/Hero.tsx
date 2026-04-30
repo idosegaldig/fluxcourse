@@ -13,11 +13,15 @@ export function Hero() {
 
   return (
     <section
-      className="relative w-full overflow-hidden h-[635px] md:h-[847px]"
+      className="relative w-full overflow-hidden h-[100dvh] md:h-[847px]"
       style={{ fontFamily: "var(--font-inter), sans-serif", backgroundColor: "#C6D1D2" }}
     >
-      {/* Background photo */}
-      <div className="absolute inset-0">
+      {/* Background photo — mobile: centered, zoomed out */}
+      <div className="md:hidden absolute inset-0">
+        <Image src="/Mobile%20Hero%20Image.png" alt="" fill className="object-cover object-top pointer-events-none" priority />
+      </div>
+      {/* Background photo — desktop: original contain layout */}
+      <div className="hidden md:block absolute inset-0">
         <Image src="/hero-subject.png" alt="" fill className="object-contain object-top pointer-events-none" priority />
       </div>
 
@@ -52,17 +56,18 @@ export function Hero() {
         </nav>
 
         {/* ── Mobile text layout ── */}
-        <div className="flex md:hidden flex-col flex-1 justify-between pb-6">
-          <div className="flex flex-col items-center">
-            <p className="m-0 text-white uppercase mix-blend-overlay whitespace-nowrap" style={{ ...mono }}>
+        <div className="flex md:hidden flex-col flex-1 justify-end pb-6 gap-5">
+          {/* Title block — centered, mix-blend-overlay per element */}
+          <div className="flex flex-col items-center w-full gap-0 mb-5">
+            <p className="m-0 text-white uppercase mix-blend-overlay w-full text-center" style={{ ...mono }}>
               [ Hello i&apos;m ]
             </p>
-            <div style={{ lineHeight: 0 }}>
-              <p className="m-0 font-medium text-white mix-blend-overlay hero-title">{`Harvey   Specter`}</p>
-            </div>
+            <p className="m-0 font-medium text-white mix-blend-overlay hero-title w-full">Harvey</p>
+            <p className="m-0 font-medium text-white mix-blend-overlay hero-title w-full">Specter</p>
           </div>
-          <div className="flex flex-col gap-[17px] w-[294px]">
-            <p className="m-0 text-[#1f1f1f] text-[14px] uppercase leading-[1.1]" style={{ letterSpacing: "-0.56px" }}>
+          {/* Description + CTA */}
+          <div className="flex flex-col gap-[17px]">
+            <p className="m-0 text-[#1f1f1f] text-[14px] uppercase leading-[1.1]" style={{ letterSpacing: "-0.56px", maxWidth: 294 }}>
               <strong className="font-bold italic">H.Studio is a </strong>
               <em className="font-normal">full-service</em>
               <strong className="font-bold italic"> creative studio creating beautiful digital experiences and products. We are an </strong>

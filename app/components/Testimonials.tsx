@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getTestimonials, urlFor, type SanityTestimonial } from "@/lib/sanity";
+import { TestimonialsSlider } from "./TestimonialsSlider";
 
 // Layout constants per slot (order 1–4) — design positions, not content
 const desktopSlots = [
@@ -9,10 +10,6 @@ const desktopSlots = [
   { left: "68.54%", top: "58%",                  rotate: "-4.15deg", zIndex: 10, logoW: 81,  logoH: 42 },
 ]
 
-const mobileSlots = [
-  { logoW: 143, logoH: 19, rotate: "-3.5deg" },
-  { logoW: 81,  logoH: 36, rotate: "2deg" },
-]
 
 function TestimonialCard({ t, logoW, logoH }: { t: SanityTestimonial; logoW: number; logoH: number }) {
   const logoUrl = urlFor(t.logo).width(300).url()
@@ -31,7 +28,6 @@ export async function Testimonials() {
   const testimonials = await getTestimonials()
 
   const desktopCards = desktopSlots.map((slot, i) => ({ slot, t: testimonials[i] })).filter(({ t }) => t)
-  const mobileCards  = mobileSlots.map((slot, i) => ({ slot, t: testimonials[i] })).filter(({ t }) => t)
 
   return (
     <section className="w-full bg-[#fafafa] overflow-hidden"
@@ -40,13 +36,7 @@ export async function Testimonials() {
       {/* ── Mobile ── */}
       <div className="flex md:hidden flex-col gap-8 px-4 py-16">
         <p className="m-0 font-medium text-black text-center capitalize testimonials-title">Testimonials</p>
-        <div className="flex gap-[-10px] items-start w-full overflow-hidden">
-          {mobileCards.map(({ slot, t }) => (
-            <div key={t._id} className="shrink-0" style={{ width: "50%", paddingRight: 10, transform: `rotate(${slot.rotate})` }}>
-              <TestimonialCard t={t} logoW={slot.logoW} logoH={slot.logoH} />
-            </div>
-          ))}
-        </div>
+        <TestimonialsSlider testimonials={testimonials} />
       </div>
 
       {/* ── Desktop: scattered absolute layout ── */}

@@ -26,10 +26,9 @@ export function News() {
       {/* ── Mobile ── */}
       <div className="flex md:hidden flex-col gap-8 px-4 py-16">
         {/* Heading */}
-        <div style={{ lineHeight: 0 }}>
-          <p className="m-0 font-light text-black uppercase news-heading">Keep up with my latest</p>
-          <p className="m-0 font-light text-black uppercase news-heading">news &amp; achievements</p>
-        </div>
+        <p className="m-0 font-light text-black uppercase news-heading" style={{ lineHeight: 0.86 }}>
+          Keep up with my latest news &amp; achievements
+        </p>
         {/* Articles — horizontal scroll */}
         <div className="flex gap-4 overflow-x-auto pb-4" style={{ scrollSnapType: "x mandatory" }}>
           {articles.map((a, i) => (

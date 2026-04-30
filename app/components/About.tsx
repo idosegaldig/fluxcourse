@@ -30,10 +30,8 @@ export function About() {
 
       {/* ── Mobile: stacked layout ── */}
       <div className="flex md:hidden flex-col gap-5 w-full">
-        <div className="flex items-center justify-between w-full">
-          <p style={monoLabel}>[ About ]</p>
-          <p style={monoLabel}>002</p>
-        </div>
+        <p style={monoLabel}>002</p>
+        <p style={monoLabel}>[ About ]</p>
         {/* Text with brackets */}
         <div className="flex gap-3 items-stretch w-full">
           <div className="flex flex-col justify-between w-4 shrink-0"><Corner pos="tl" /><Corner pos="bl" /></div>

@@ -41,8 +41,8 @@ function ProjectCard({ title, tags, image, height }: { title: string; tags: stri
         </div>
       </div>
       <div className="flex items-center justify-between w-full">
-        <p className="m-0 font-bold uppercase whitespace-nowrap"
-          style={{ fontSize: 40, letterSpacing: "-0.04em", lineHeight: 1.1, fontFamily: "var(--font-inter), sans-serif", color: "#1f1f1f" }}>{title}</p>
+        <p className="m-0 font-black md:font-bold uppercase whitespace-nowrap text-[24px] md:text-[40px]"
+          style={{ letterSpacing: "-0.04em", lineHeight: 1.1, fontFamily: "var(--font-inter), sans-serif", color: "#1f1f1f" }}>{title}</p>
         <ArrowIcon />
       </div>
     </div>

@@ -31,10 +31,14 @@ export function Services() {
             <div className="w-full h-px bg-white/20" />
             <div className="flex flex-col md:flex-row md:items-start md:justify-between w-full pt-2 gap-4">
               <p className="m-0 text-white font-bold italic uppercase whitespace-nowrap shrink-0" style={{ fontSize: 36, letterSpacing: "-0.04em", lineHeight: 1.1 }}>{s.title}</p>
-              {/* Mobile: description then image stacked; Desktop: side by side */}
-              <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start shrink-0">
+              <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start w-full md:w-auto md:shrink-0">
                 <p className="m-0 text-white text-[14px] leading-[1.3]" style={{ letterSpacing: "-0.56px", maxWidth: 393 }}>{s.desc}</p>
-                <div className="relative shrink-0 overflow-hidden" style={{ width: 151, height: 151 }}>
+                {/* Mobile: full-width 151px tall */}
+                <div className="relative w-full overflow-hidden md:hidden" style={{ height: 151 }}>
+                  <Image src={s.img} alt={s.title} fill className="object-cover" />
+                </div>
+                {/* Desktop: 151×151 square */}
+                <div className="relative hidden md:block shrink-0 overflow-hidden" style={{ width: 151, height: 151 }}>
                   <Image src={s.img} alt={s.title} fill className="object-cover" />
                 </div>
               </div>
