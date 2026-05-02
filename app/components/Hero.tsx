@@ -1,11 +1,20 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { gsap } from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(SplitText, ScrollTrigger);
+
+const NAV_ITEMS: { label: string; href: string }[] = [
+  { label: "About",    href: "/about" },
+  { label: "Services", href: "#services" },
+  { label: "Projects", href: "#projects" },
+  { label: "News",     href: "#news" },
+  { label: "Contact",  href: "#contact" },
+];
 
 function HamburgerIcon() {
   return (
@@ -33,6 +42,42 @@ export function Hero() {
   const dDescRef  = useRef<HTMLParagraphElement>(null);
   const dBtnRef   = useRef<HTMLButtonElement>(null);
   const dImgRef   = useRef<HTMLDivElement>(null);
+
+  // Mobile menu refs
+  const menuPanelRef = useRef<HTMLDivElement>(null);
+  const menuItemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const menuBotRef   = useRef<HTMLDivElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const openMenu = useCallback(() => {
+    setMenuOpen(true);
+    // Start panel off-screen to the right
+    gsap.set(menuPanelRef.current, { x: "100%" });
+    gsap.to(menuPanelRef.current, { x: 0, duration: 0.5, ease: "power3.out" });
+    // Stagger items in from the right
+    gsap.fromTo(
+      menuItemRefs.current.filter(Boolean),
+      { x: 60, opacity: 0 },
+      { x: 0, opacity: 1, stagger: 0.07, duration: 0.55, ease: "power3.out", delay: 0.2 }
+    );
+    gsap.fromTo(menuBotRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", delay: 0.55 });
+  }, []);
+
+  const closeMenu = useCallback(() => {
+    gsap.to(menuItemRefs.current.filter(Boolean), { x: 30, opacity: 0, duration: 0.2, stagger: 0.03, ease: "power2.in" });
+    gsap.to(menuBotRef.current, { opacity: 0, duration: 0.15 });
+    gsap.to(menuPanelRef.current, {
+      x: "100%", duration: 0.45, ease: "power3.inOut", delay: 0.1,
+      onComplete: () => setMenuOpen(false),
+    });
+  }, []);
+
+  // Close on route change / resize to desktop
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth >= 768 && menuOpen) closeMenu(); };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [menuOpen, closeMenu]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -115,22 +160,49 @@ export function Hero() {
       <div className="relative h-full flex flex-col px-4 md:px-8">
 
         {/* ── Mobile nav ── */}
-        <nav className="flex md:hidden items-center justify-between py-6">
-          <span className="font-semibold text-base tracking-[-0.04em] capitalize text-black">H.Studio</span>
-          <button aria-label="Menu"><HamburgerIcon /></button>
+        <nav className="flex md:hidden items-center justify-between py-6 relative z-10">
+          <Link href="/" className="font-semibold text-base tracking-[-0.04em] capitalize text-black no-underline"
+            style={{ textDecoration: "none" }}>
+            H.Studio
+          </Link>
+          <button
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            onClick={menuOpen ? closeMenu : openMenu}
+            className="w-10 h-10 flex items-center justify-center"
+          >
+            {menuOpen
+              ? <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="black" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              : <HamburgerIcon />
+            }
+          </button>
         </nav>
 
         {/* ── Desktop nav ── */}
         <nav className="hidden md:flex items-center justify-between py-6">
-          <span className="font-semibold text-base tracking-[-0.04em] capitalize text-black">H.Studio</span>
+          <Link href="/" className="font-semibold text-base tracking-[-0.04em] capitalize text-black"
+            style={{ textDecoration: "none" }}>
+            H.Studio
+          </Link>
           <div className="flex gap-14 font-semibold text-base tracking-[-0.04em] capitalize text-black">
-            {(["About", "Services", "Projects", "News", "Contact"] as const).map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="hover:opacity-70 transition-opacity">{item}</a>
-            ))}
+            {NAV_ITEMS.map(({ label, href }) =>
+              href.startsWith("/") ? (
+                <Link key={label} href={href} className="hover:opacity-70 transition-opacity"
+                  style={{ textDecoration: "none", color: "inherit" }}>
+                  {label}
+                </Link>
+              ) : (
+                <a key={label} href={href} className="hover:opacity-70 transition-opacity"
+                  style={{ textDecoration: "none", color: "inherit" }}>
+                  {label}
+                </a>
+              )
+            )}
           </div>
-          <button className="bg-black text-white text-sm font-medium px-4 py-3 rounded-[24px] tracking-[-0.04em] cursor-pointer">
-            Let&apos;s talk
-          </button>
+          <a href="#contact">
+            <button className="bg-black text-white text-sm font-medium px-4 py-3 rounded-[24px] tracking-[-0.04em] cursor-pointer">
+              Let&apos;s talk
+            </button>
+          </a>
         </nav>
 
         {/* ── Mobile text layout ── */}
@@ -182,6 +254,84 @@ export function Hero() {
           </div>
         </div>
 
+      </div>
+
+      {/* ── Mobile slide-in menu overlay ────────────────────────── */}
+      {/* Always in DOM; GSAP drives position. Rendered on top of everything. */}
+      <div
+        ref={menuPanelRef}
+        className="md:hidden fixed inset-0 z-40 flex flex-col px-6 py-6"
+        style={{
+          background: "#1f1f1f",
+          transform: "translateX(100%)",
+          fontFamily: "var(--font-inter), sans-serif",
+          // prevent interaction when off-screen
+          pointerEvents: menuOpen ? "auto" : "none",
+        }}
+      >
+        {/* Panel header */}
+        <div className="flex items-center justify-between mb-16">
+          <Link href="/" onClick={closeMenu}
+            className="font-semibold text-base tracking-[-0.04em] capitalize text-white"
+            style={{ textDecoration: "none" }}>
+            H.Studio
+          </Link>
+          <button onClick={closeMenu} className="w-10 h-10 flex items-center justify-center" aria-label="Close menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex flex-col gap-2 flex-1">
+          {NAV_ITEMS.map(({ label, href }, i) => {
+            const inner = (
+              <div className="flex items-center justify-between py-4 border-b border-white/10 group">
+                <span className="text-white font-light uppercase"
+                  style={{ fontSize: 40, letterSpacing: "-0.04em", lineHeight: 0.95 }}>
+                  {label}
+                </span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="opacity-30 group-hover:opacity-80 transition-opacity">
+                  <path d="M7 17L17 7M17 7H7M17 7V17" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            );
+
+            return href.startsWith("/") ? (
+              <Link
+                key={label}
+                href={href}
+                ref={(el) => { menuItemRefs.current[i] = el; }}
+                onClick={closeMenu}
+                style={{ textDecoration: "none" }}>
+                {inner}
+              </Link>
+            ) : (
+              <a
+                key={label}
+                href={href}
+                ref={(el) => { menuItemRefs.current[i] = el; }}
+                onClick={closeMenu}
+                style={{ textDecoration: "none" }}>
+                {inner}
+              </a>
+            );
+          })}
+        </nav>
+
+        {/* Bottom CTA */}
+        <div ref={menuBotRef} className="pt-8 pb-4">
+          <a href="#contact" onClick={closeMenu} style={{ textDecoration: "none" }}>
+            <button className="w-full bg-white text-black text-[14px] font-semibold py-4 rounded-full tracking-[-0.04em] cursor-pointer">
+              Let&apos;s talk
+            </button>
+          </a>
+          <p className="mt-6 text-center text-white/30"
+            style={{ fontFamily: "var(--font-geist-mono), monospace", fontSize: 10, textTransform: "uppercase" }}>
+            [ H.Studio — Creative Direction ]
+          </p>
+        </div>
       </div>
     </section>
   );

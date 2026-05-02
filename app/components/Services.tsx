@@ -115,7 +115,7 @@ export function Services() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="bg-black w-full px-4 py-12 md:px-8 md:py-[80px] flex flex-col gap-8 md:gap-12 relative"
+    <section id="services" ref={sectionRef} className="bg-black w-full px-4 py-12 md:px-8 md:py-[80px] flex flex-col gap-8 md:gap-12 relative"
       style={{ fontFamily: "var(--font-inter), sans-serif", cursor: "none" }}>
 
       {/* Custom cursor */}

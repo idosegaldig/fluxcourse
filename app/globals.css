@@ -52,3 +52,7 @@ body {
 /* Footer wordmark: 91px mobile → 290px desktop */
 .footer-wordmark { font-size: 91px; letter-spacing: -0.06em; line-height: 0.8; }
 @media (min-width: 768px) { .footer-wordmark { font-size: 290px; } }
+
+/* About page hero title: 64px mobile → 12vw desktop */
+.about-hero-title { font-size: 64px; letter-spacing: -0.04em; line-height: 0.88; }
+@media (min-width: 768px) { .about-hero-title { font-size: clamp(80px, 12vw, 180px); } }

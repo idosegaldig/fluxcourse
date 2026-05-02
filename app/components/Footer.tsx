@@ -4,7 +4,7 @@
 
 export function Footer() {
   return (
-    <footer className="bg-black w-full" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
+    <footer id="contact" className="bg-black w-full" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
 
       {/* ── Mobile ── */}
       <div className="flex md:hidden flex-col gap-12 px-4 pt-12">

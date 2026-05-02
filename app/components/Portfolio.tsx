@@ -27,7 +27,7 @@ export async function Portfolio() {
   const rightProjects = projects.filter((_, i) => desktopHeights[i]?.right > 0);
 
   return (
-    <section className="w-full bg-[#fafafa] px-4 py-12 md:px-8 md:py-[80px]"
+    <section id="projects" className="w-full bg-[#fafafa] px-4 py-12 md:px-8 md:py-[80px]"
       style={{ fontFamily: "var(--font-inter), sans-serif" }}>
       <div className="flex flex-col gap-5 md:gap-[20px] w-full">
 

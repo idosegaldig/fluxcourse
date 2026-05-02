@@ -169,7 +169,7 @@ function Slider() {
 
 export function News() {
   return (
-    <section className="w-full bg-[#f3f3f3]" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
+    <section id="news" className="w-full bg-[#f3f3f3]" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
 
       {/* Mobile */}
       <div className="flex md:hidden flex-col gap-8 px-4 py-16">
