@@ -1,6 +1,11 @@
+"use client";
+import { useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
+import { gsap } from "gsap";
+import { SplitText } from "gsap/SplitText";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-// Mobile: centered, no stagger, 32px  |  Desktop: staggered, 6.67vw (.section-big-text)
+gsap.registerPlugin(SplitText, ScrollTrigger);
 
 const monoLabel: CSSProperties = {
   fontFamily: "var(--font-geist-mono), monospace",
@@ -15,9 +20,43 @@ export function Tagline() {
     whiteSpace: "nowrap", margin: 0,
   };
 
+  const sectionRef  = useRef<HTMLElement>(null);
+  const textRef     = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      if (!sectionRef.current || !textRef.current) return;
+
+      // Split all text elements inside the container into chars
+      const split = new SplitText(textRef.current.querySelectorAll("p"), {
+        type: "chars",
+      });
+
+      // Set initial opacity on all chars
+      gsap.set(split.chars, { opacity: 0.2 });
+
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "+=100%",
+          pin: true,
+          scrub: true,
+          anticipatePin: 1,
+        },
+      }).to(split.chars, {
+        opacity: 1,
+        stagger: { each: 0.04, from: "start" },
+        ease: "none",
+      });
+    });
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="w-full bg-[#fafafa] px-4 py-12 md:px-8 md:py-[120px]">
-      <div className="flex flex-col gap-6 w-full">
+    <section ref={sectionRef} className="w-full bg-[#fafafa] px-4 py-12 md:px-8 md:py-[120px]">
+      <div ref={textRef} className="flex flex-col gap-6 w-full">
 
         {/* Header */}
         <div className="flex flex-col gap-3 items-end w-full">

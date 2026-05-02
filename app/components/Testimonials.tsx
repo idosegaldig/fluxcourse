@@ -1,6 +1,6 @@
-import Image from "next/image";
-import { getTestimonials, urlFor, type SanityTestimonial } from "@/lib/sanity";
+import { getTestimonials } from "@/lib/sanity";
 import { TestimonialsSlider } from "./TestimonialsSlider";
+import { AnimatedTestimonialCard } from "./AnimatedTestimonialCard";
 
 // Layout constants per slot (order 1–4) — design positions, not content
 const desktopSlots = [
@@ -10,19 +10,6 @@ const desktopSlots = [
   { left: "68.54%", top: "58%",                  rotate: "-4.15deg", zIndex: 10, logoW: 81,  logoH: 42 },
 ]
 
-
-function TestimonialCard({ t, logoW, logoH }: { t: SanityTestimonial; logoW: number; logoH: number }) {
-  const logoUrl = urlFor(t.logo).width(300).url()
-  return (
-    <div className="bg-[#f1f1f1] border border-[#ddd] rounded p-6 flex flex-col gap-4">
-      <div className="relative" style={{ width: logoW, height: logoH }}>
-        <Image src={logoUrl} alt="" fill className="object-contain object-left" />
-      </div>
-      <p className="m-0 text-[#1f1f1f] text-[18px] leading-[1.3]" style={{ letterSpacing: "-0.72px" }}>{t.quote}</p>
-      <p className="m-0 text-black font-black text-[16px] uppercase" style={{ letterSpacing: "-0.64px", lineHeight: 1.1 }}>{t.name}</p>
-    </div>
-  )
-}
 
 export async function Testimonials() {
   const testimonials = await getTestimonials()
@@ -45,10 +32,14 @@ export async function Testimonials() {
           <p className="m-0 font-medium text-black text-center capitalize testimonials-title">Testimonials</p>
         </div>
         {desktopCards.map(({ slot, t }) => (
-          <div key={t._id} className="absolute"
-            style={{ left: slot.left, top: slot.top, transform: `rotate(${slot.rotate})`, width: 353, zIndex: slot.zIndex }}>
-            <TestimonialCard t={t} logoW={slot.logoW} logoH={slot.logoH} />
-          </div>
+          <AnimatedTestimonialCard
+            key={t._id}
+            t={t}
+            logoW={slot.logoW}
+            logoH={slot.logoH}
+            rotate={slot.rotate}
+            style={{ left: slot.left, top: slot.top, zIndex: slot.zIndex }}
+          />
         ))}
       </div>
 

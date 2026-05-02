@@ -1,7 +1,11 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { urlFor, type SanityTestimonial } from "@/lib/sanity";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const GAP = 10;
 
@@ -10,12 +14,29 @@ export function TestimonialsSlider({ testimonials }: { testimonials: SanityTesti
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // After mount, set all cards to the tallest card's height
+  // After mount: equalise heights + animate slider in
   useEffect(() => {
     const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
     if (!cards.length) return;
     const max = Math.max(...cards.map(c => c.offsetHeight));
     cards.forEach(c => { c.style.height = `${max}px`; });
+
+    // Scale 0.1 → 1 on scroll
+    const ctx = gsap.context(() => {
+      if (!scrollRef.current) return;
+      gsap.fromTo(scrollRef.current,
+        { scale: 0.1, opacity: 0 },
+        {
+          scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.4)",
+          scrollTrigger: {
+            trigger: scrollRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse",
+          },
+        }
+      );
+    });
+    return () => ctx.revert();
   }, [testimonials]);
 
   function onScroll() {

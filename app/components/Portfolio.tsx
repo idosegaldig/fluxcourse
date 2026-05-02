@@ -1,24 +1,7 @@
-import Image from "next/image";
-import { getProjects, urlFor, type SanityProject } from "@/lib/sanity";
+import { getProjects } from "@/lib/sanity";
+import { ProjectCard } from "./ProjectCard";
 
 const mono = { fontFamily: "var(--font-geist-mono), monospace", fontSize: 14, fontWeight: 400, lineHeight: 1.1, color: "#1f1f1f", textTransform: "uppercase" as const, margin: 0 };
-
-function ArrowIcon() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-      <path d="M8 24L24 8M24 8H8M24 8V24" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function Tag({ label }: { label: string }) {
-  return (
-    <span className="px-2 py-1 rounded-full text-[#111] text-[14px] font-medium whitespace-nowrap"
-      style={{ backdropFilter: "blur(10px)", backgroundColor: "rgba(255,255,255,0.3)", letterSpacing: "-0.56px", fontFamily: "var(--font-inter), sans-serif" }}>
-      {label}
-    </span>
-  );
-}
 
 function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
   const b: Record<string, object> = {
@@ -28,25 +11,6 @@ function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
     br: { borderBottom: "1px solid #1f1f1f", borderRight: "1px solid #1f1f1f" },
   };
   return <div style={{ width: 14, height: 14, flexShrink: 0, ...b[pos] }} />;
-}
-
-function ProjectCard({ title, tags, image, height }: { title: string; tags: string[]; image: SanityProject['image']; height: number }) {
-  const imgUrl = urlFor(image).width(800).url()
-  return (
-    <div className="flex flex-col gap-[10px] w-full">
-      <div className="relative w-full overflow-hidden" style={{ height }}>
-        <Image src={imgUrl} alt={title} fill className="object-cover" />
-        <div className="absolute bottom-4 left-4 flex gap-3">
-          {tags.map(t => <Tag key={t} label={t} />)}
-        </div>
-      </div>
-      <div className="flex items-center justify-between w-full">
-        <p className="m-0 font-black md:font-bold uppercase whitespace-nowrap text-[24px] md:text-[40px]"
-          style={{ letterSpacing: "-0.04em", lineHeight: 1.1, fontFamily: "var(--font-inter), sans-serif", color: "#1f1f1f" }}>{title}</p>
-        <ArrowIcon />
-      </div>
-    </div>
-  );
 }
 
 const desktopHeights: Record<number, { left: number; right: number }> = {
